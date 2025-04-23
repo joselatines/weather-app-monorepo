@@ -10,9 +10,9 @@ describe('GET /api/v1/weather', () => {
       .expect('Content-Type', /json/)
       .expect(200);
 
-    expect(response.body.data).toHaveProperty('city', 'London');
-    expect(response.body.data).toHaveProperty('temperature');
-    expect(response.body.data).toHaveProperty('condition');
+    expect(response.body.data.location).toHaveProperty('name', 'London');
+    expect(response.body.data.location).toHaveProperty('region');
+    expect(response.body.data).toHaveProperty('current');
     expect(response.body).toHaveProperty('message');
   });
 
@@ -23,13 +23,25 @@ describe('GET /api/v1/weather', () => {
       .expect('Content-Type', /json/)
       .expect(400);
   });
+
+  it('responds with 400 when city parameter is not valid', async () => {
+    const response = await request(app)
+      .get('/api/v1/weather?city=InvalidCity')
+      .set('Accept', 'application/json')
+      .expect('Content-Type', /json/)
+      .expect(400);
+
+    expect(response.body.message).toContain('No matching location found.');
+    expect(response.body.data).not.toHaveProperty('current');
+  });
+
 });
 
 describe('GET /api/v1/weather/autocomplete', () => {
   it('responds with city suggestions for valid query', async () => {
     const response = await request(app)
       .get('/api/v1/weather/autocomplete')
-      .query({ query: 'lo' })
+      .query({ query: 'vene' })
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
       .expect(200);
@@ -45,5 +57,17 @@ describe('GET /api/v1/weather/autocomplete', () => {
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
       .expect(400);
+  });
+
+  it('responds with 200 when invalid query', async () => {
+    const response = await request(app)
+      .get('/api/v1/weather/autocomplete')
+      .query({ query: 'invalidquery' })
+      .set('Accept', 'application/json')
+      .expect('Content-Type', /json/)
+      .expect(200);
+
+    expect(Array.isArray(response.body.data)).toBe(true);
+    expect(response.body.data.length).toBeLessThanOrEqual(0);
   });
 });
