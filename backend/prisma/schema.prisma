@@ -1,0 +1,42 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+/* model User {
+  id    Int     @id @default(autoincrement())
+  email String  @unique
+  name  String?
+} */
+
+model users {
+  user_id       String          @id @default(uuid())
+  username      String          @unique
+  password_hash String
+  created_at    DateTime        @default(now())
+  updated_at    DateTime        @default(now())
+
+  favorite_cities favorite_cities[]
+}
+
+model favorite_cities {
+  favorite_id String    @id @default(uuid())
+  city_name   String
+  added_at    DateTime  @default(now())
+
+  user_id     String? // Foreign key, nullable if favorites can exist without a user
+  user        users?    @relation(fields: [user_id], references: [user_id], onDelete: Cascade) // ON DELETE CASCADE
+
+  created_at    DateTime        @default(now())
+  updated_at    DateTime        @default(now())
+  @@unique([user_id, city_name])
+}
+
