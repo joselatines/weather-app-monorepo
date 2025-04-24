@@ -1,10 +1,14 @@
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import MessageResponse from '../../interfaces/MessageResponse';
-import { weatherAPI } from '../../services';
+import { weatherAPI, prisma } from '../../services';
+import { AuthenticatedRequest } from '../../interfaces/AuthenticatedRequest';
 
 
 
-export const getWeather = async (req: Request, res: Response<MessageResponse>) => {
+export const getWeather = async (req: AuthenticatedRequest, res: Response<MessageResponse>) => {
+  if (!req.user?.user_id) {
+    return res.status(401).json({ message: 'Unauthorized' });
+  }
   try {
     const { city } = req.query;
   
@@ -28,7 +32,10 @@ export const getWeather = async (req: Request, res: Response<MessageResponse>) =
   
 };
 
-export const getAutocomplete = async (req: Request, res: Response<MessageResponse>) => {
+export const getAutocomplete = async (req: AuthenticatedRequest, res: Response<MessageResponse>) => {
+  if (!req.user?.user_id) {
+    return res.status(401).json({ message: 'Unauthorized' });
+  }
   try {
     const { query } = req.query as { query: string };
   

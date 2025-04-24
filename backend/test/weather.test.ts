@@ -1,10 +1,20 @@
 import request from 'supertest';
 import app from '../src/app';
+import jwt from 'jsonwebtoken';
+import { JWT_SECRET } from '../src/config';
+
+const TEST_USER = {
+  user_id: 'test-user-id',
+  username: 'testuser'
+};
+
+const authToken = jwt.sign(TEST_USER, JWT_SECRET, { expiresIn: '1h' });
 
 describe('GET /api/v1/weather', () => {
   it('responds with weather data for valid city', async () => {
     const response = await request(app)
       .get('/api/v1/weather')
+      .set('Authorization', `Bearer ${authToken}`)
       .query({ city: 'London' })
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
@@ -20,6 +30,7 @@ describe('GET /api/v1/weather', () => {
     await request(app)
       .get('/api/v1/weather')
       .set('Accept', 'application/json')
+      .set('Authorization', `Bearer ${authToken}`)
       .expect('Content-Type', /json/)
       .expect(400);
   });
@@ -29,6 +40,7 @@ describe('GET /api/v1/weather', () => {
       .get('/api/v1/weather?city=InvalidCity')
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
+      .set('Authorization', `Bearer ${authToken}`)
       .expect(400);
 
     expect(response.body.message).toContain('No matching location found.');
@@ -41,8 +53,10 @@ describe('GET /api/v1/weather/autocomplete', () => {
   it('responds with city suggestions for valid query', async () => {
     const response = await request(app)
       .get('/api/v1/weather/autocomplete')
+      .set('Authorization', `Bearer ${authToken}`)
       .query({ query: 'vene' })
       .set('Accept', 'application/json')
+      .set('Authorization', `Bearer ${authToken}`)
       .expect('Content-Type', /json/)
       .expect(200);
 
@@ -55,6 +69,7 @@ describe('GET /api/v1/weather/autocomplete', () => {
     await request(app)
       .get('/api/v1/weather/autocomplete')
       .set('Accept', 'application/json')
+      .set('Authorization', `Bearer ${authToken}`)
       .expect('Content-Type', /json/)
       .expect(400);
   });
@@ -64,6 +79,7 @@ describe('GET /api/v1/weather/autocomplete', () => {
       .get('/api/v1/weather/autocomplete')
       .query({ query: 'invalidquery' })
       .set('Accept', 'application/json')
+      .set('Authorization', `Bearer ${authToken}`)
       .expect('Content-Type', /json/)
       .expect(200);
 
