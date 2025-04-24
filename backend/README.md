@@ -1,59 +1,262 @@
-# Express API Starter with Typescript
+# Weather API with Authentication
 
-How to use this template:
+A backend service providing weather data and user favorites management with JWT authentication.
 
+## Features
+
+- User registration and login
+- JWT authentication
+- Weather data from external API
+- User-specific favorite cities
+- Prisma ORM for database access
+- Comprehensive test coverage
+
+## Installation
+
+### With Docker
 ```sh
-npx create-express-api --typescript --directory my-api-name
+docker-compose up
 ```
 
-Includes API Server utilities:
-
-* [morgan](https://www.npmjs.com/package/morgan)
-  * HTTP request logger middleware for node.js
-* [helmet](https://www.npmjs.com/package/helmet)
-  * Helmet helps you secure your Express apps by setting various HTTP headers. It's not a silver bullet, but it can help!
-* [dotenv](https://www.npmjs.com/package/dotenv)
-  * Dotenv is a zero-dependency module that loads environment variables from a `.env` file into `process.env`
-* [cors](https://www.npmjs.com/package/cors)
-  * CORS is a node.js package for providing a Connect/Express middleware that can be used to enable CORS with various options.
-
-Development utilities:
-
-* [typescript](https://www.npmjs.com/package/typescript)
-  * TypeScript is a language for application-scale JavaScript.
-* [ts-node](https://www.npmjs.com/package/ts-node)
-  * TypeScript execution and REPL for node.js, with source map and native ESM support.
-* [nodemon](https://www.npmjs.com/package/nodemon)
-  * nodemon is a tool that helps develop node.js based applications by automatically restarting the node application when file changes in the directory are detected.
-* [eslint](https://www.npmjs.com/package/eslint)
-  * ESLint is a tool for identifying and reporting on patterns found in ECMAScript/JavaScript code.
-* [typescript-eslint](https://typescript-eslint.io/)
-  * Tooling which enables ESLint to support TypeScript.
-* [jest](https://www.npmjs.com/package/jest)
-  * Jest is a delightful JavaScript Testing Framework with a focus on simplicity.
-* [supertest](https://www.npmjs.com/package/supertest)
-  * HTTP assertions made easy via superagent.
-
-## Setup
-
-```
+### Without Docker
+1. Install dependencies:
+```sh
 npm install
 ```
 
-## Lint
+2. Set up database:
+```sh
+npx prisma migrate dev
+```
 
-```
-npm run lint
+3. Start development server:
+```sh
+npm run dev
 ```
 
-## Test
+## API Endpoints
 
+### Authentication
+
+#### `POST /auth/register` - Register new user
+**Headers:**
 ```
-npm run test
+Content-Type: application/json
 ```
+
+**Request Body:**
+```json
+{
+  "username": "string (required, min 3 chars)",
+  "password": "string (required, min 8 chars)"
+}
+```
+
+**Success Response:**
+```json
+{
+  "message": "User registered successfully",
+  "data": {
+    "user_id": "string",
+    "username": "string"
+  }
+}
+```
+
+#### `POST /auth/login` - Login user  
+**Headers:**
+```
+Content-Type: application/json
+```
+
+**Request Body:**
+```json
+{
+  "username": "string (required)",
+  "password": "string (required)"
+}
+```
+
+**Success Response:**
+```json
+{
+  "message": "Login successful",
+  "data": {
+    "token": "JWT string",
+    "user": {
+      "user_id": "string",
+      "username": "string"
+    }
+  }
+}
+```
+
+#### `GET /auth/me` - Get current user
+**Headers:**
+```
+Authorization: Bearer {JWT_TOKEN}
+Content-Type: application/json
+```
+
+**Success Response:**
+```json
+{
+  "message": "Current user data fetched",
+  "data": {
+    "user_id": "string",
+    "username": "string"
+  }
+}
+```
+
+### Weather
+
+#### `GET /weather` - Get weather data
+**Headers:**
+```
+Authorization: Bearer {JWT_TOKEN}
+Content-Type: application/json
+```
+
+**Query Parameters:**
+```
+?city=string (required)
+```
+
+**Success Response:**
+```json
+{
+  "message": "Weather data fetched successfully",
+  "data": {
+    "location": {
+      "name": "string",
+      "region": "string",
+      "country": "string"
+    },
+    "current": {
+      "temp_c": number,
+      "condition": {
+        "text": "string",
+        "icon": "string"
+      }
+    }
+  }
+}
+```
+
+#### `GET /weather/autocomplete` - City autocomplete
+**Headers:**
+```
+Authorization: Bearer {JWT_TOKEN}
+Content-Type: application/json
+```
+
+**Query Parameters:**
+```
+?query=string (required)
+```
+
+**Success Response:**
+```json
+{
+  "message": "City suggestions fetched successfully",
+  "data": [
+    {
+      "id": number,
+      "name": "string",
+      "region": "string",
+      "country": "string"
+    }
+  ]
+}
+```
+
+### Favorites
+
+#### `GET /favorites` - Get user favorites
+**Headers:**
+```
+Authorization: Bearer {JWT_TOKEN}
+Content-Type: application/json
+```
+
+**Success Response:**
+```json
+{
+  "message": "Favorites fetched successfully",
+  "data": ["string"]
+}
+```
+
+#### `POST /favorites` - Add favorite city
+**Headers:**
+```
+Authorization: Bearer {JWT_TOKEN}
+Content-Type: application/json
+```
+
+**Request Body:**
+```json
+{
+  "city": "string (required)"
+}
+```
+
+**Success Response:**
+```json
+{
+  "message": "City added to favorites",
+  "data": {
+    "city_name": "string"
+  }
+}
+```
+
+#### `DELETE /favorites/{city}` - Remove favorite
+**Headers:**
+```
+Authorization: Bearer {JWT_TOKEN}
+Content-Type: application/json
+```
+
+**Path Parameters:**
+```
+{city} = string (required)
+```
+
+**Success Response:**
+```json
+{
+  "message": "City removed from favorites",
+  "data": ["string"]
+}
+```
+
+## Error Handling
+
+Common error responses:
+- 400 Bad Request - Invalid input
+- 401 Unauthorized - Missing/invalid token
+- 404 Not Found - Resource not found
+- 409 Conflict - Duplicate username
 
 ## Development
 
+```sh
+npm run dev  # Start dev server
+npm test     # Run tests
+npm run lint # Run linter
 ```
-npm run dev
+
+## Testing
+
+The test suite covers:
+- Authentication flow
+- Weather API endpoints
+- Favorites management
+- Error cases
+
+Run tests:
+```sh
+npm test
 ```
