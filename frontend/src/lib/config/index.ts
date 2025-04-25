@@ -1,3 +1,2 @@
 export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api';
-export const BEARER_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiYTQwYmQzZjAtZDk4MC00YjUxLWI4NDgtMTg3MWM1ZDBjOGViIiwidXNlcm5hbWUiOiJ0ZXN0dXNlcjIiLCJpYXQiOjE3NDU1NDE3NDMsImV4cCI6MTc0NTYyODE0M30.Dc8buQXIQp9p7I5GW0waYR5Zdbs-WfX7ks3V3_eKqfQ"
 export const SEARCH_HISTORY_KEY = "searchHistory"

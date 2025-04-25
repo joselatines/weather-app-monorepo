@@ -4,13 +4,15 @@ import WeatherDisplay from "../../components/WeatherDisplay";
 import RecentSearches from "../../components/RecentSearches";
 import Favorites from "../../components/Favorites";
 import { WeatherData } from "../../types/weather";
-import { API_BASE_URL, BEARER_TOKEN, SEARCH_HISTORY_KEY } from "../../lib/config";
+import { API_BASE_URL, SEARCH_HISTORY_KEY } from "../../lib/config"; 
 import { validateCityName } from "../../lib/utils/strings";
+import { useNavigate } from "react-router-dom"; // Added for potential redirect on auth error
 
 function HomePage() {
   const [weather, setWeather] = useState<WeatherData | null>(null);
   const [error, setError] = useState<string>('');
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
+  const navigate = useNavigate(); // Added hook
 
 
   // Save to localStorage when searches change
@@ -19,9 +21,9 @@ function HomePage() {
       city,
       ...recentSearches.filter(item => item.toLowerCase() !== city.toLowerCase())
     ];
-
+    const token = localStorage.getItem("token");
     setRecentSearches(updatedSearches);
-    localStorage.setItem(SEARCH_HISTORY_KEY, JSON.stringify(updatedSearches));
+    localStorage.setItem(`${SEARCH_HISTORY_KEY}_${token}`, JSON.stringify(updatedSearches));
 
   };
 
@@ -39,12 +41,21 @@ function HomePage() {
         setError(error);
         return;
       }
+
+      const token = localStorage.getItem("token");
+      if (!token) {
+        setError("Authentication required. Please log in.");
+        // Optionally redirect to login
+        // navigate("/login"); 
+        return;
+      }
   
       const response = await fetch(`${API_BASE_URL}/weather?city=${city}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${BEARER_TOKEN}`
+          // Use token from localStorage
+          'Authorization': `Bearer ${token}` 
         }
       });
 
@@ -71,23 +82,33 @@ function HomePage() {
 
       saveSearchIntoLocalStorage(city);
     } catch (error) {
-      console.log({error})
-      setError('Unable to fetch weather data, try again.');
+      console.error("Fetch error:", error); // Log the actual error
+      if (error instanceof Error && error.message.includes("Unauthorized")) { // Basic check for auth error
+         setError('Session expired or invalid. Please log in again.');
+         localStorage.removeItem("token"); // Clear invalid token
+         navigate("/login"); // Redirect to login
+      } else {
+         setError('Unable to fetch weather data, try again.');
+      }
     }
   }
 
   return (
-    <div className="container-fluid" style={{ width: '100vw' }}>
-      <div className="row justify-content-center">
-        <div className="col col-lg-auto ">
-         <WeatherDisplay weather={weather} />
+  <div className="container-fluid px-3 px-md-4 px-lg-5" style={{ minHeight: '100vh' }}>
+    <div className="row g-3 g-md-4">
+      {/* Main Weather Column - takes full width on mobile, 7 cols on larger screens */}
+      <div className="col-12 col-lg-7 order-1 order-lg-1">
+        <div className="d-flex flex-column gap-3 gap-md-4">
           <SearchBar onSearch={handleSubmitSearch} />
-          {error && <div className="error-message text-danger">{error}</div>}
+          {error && <div className="alert alert-danger">{error}</div>}
+          {weather && <WeatherDisplay weather={weather} />}
         </div>
+      </div>
 
-        <div className="col col-lg-auto">
-
-           <RecentSearches 
+      {/* Sidebar Column - takes full width on mobile, 5 cols on larger screens */}
+      <div className="col-12 col-lg-5 order-2 order-lg-2">
+        <div className="d-flex flex-column gap-3 gap-md-4">
+          <RecentSearches 
             handleSubmitSearch={handleSubmitSearch}
             recentSearches={recentSearches} 
             setRecentSearches={setRecentSearches}
@@ -97,12 +118,9 @@ function HomePage() {
             onFavoriteClick={handleSubmitSearch}
           />
         </div>
-
-        <div>
-         
-        </div>
       </div>
     </div>
+  </div>
   );
 }
 

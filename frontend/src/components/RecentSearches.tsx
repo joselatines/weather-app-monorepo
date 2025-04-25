@@ -10,7 +10,8 @@ const RecentSearches = ({ handleSubmitSearch , recentSearches, setRecentSearches
 
   // Load recent searches from localStorage on mount
   useEffect(() => {
-    const savedSearches = localStorage.getItem(SEARCH_HISTORY_KEY);
+    const token = localStorage.getItem("token");
+    const savedSearches = localStorage.getItem(`${SEARCH_HISTORY_KEY}_${token}`);
     if (savedSearches) {
       setRecentSearches(JSON.parse(savedSearches));
     }
@@ -22,7 +23,8 @@ const RecentSearches = ({ handleSubmitSearch , recentSearches, setRecentSearches
   };
 
   const clearSearches = () => {
-    localStorage.removeItem(SEARCH_HISTORY_KEY);
+    const token = localStorage.getItem("token");
+    localStorage.removeItem(`${SEARCH_HISTORY_KEY}_${token}`);
     setRecentSearches([]);
   }
 

@@ -1,5 +1,5 @@
 import { FC, useState, useEffect } from 'react';
-import { API_BASE_URL, BEARER_TOKEN } from '../lib/config';
+import { API_BASE_URL } from '../lib/config';
 
 interface SearchBarProps {
   onSearch: (query: string) => void;
@@ -14,11 +14,13 @@ const SearchBar: FC<SearchBarProps> = ({ onSearch }) => {
     if (query.length > 2) { // Only fetch after 3 characters
       const fetchSuggestions = async () => {
         try {
+        const token = localStorage.getItem("token");
+
           const response = await fetch(`${API_BASE_URL}/weather/autocomplete?query=${query}`, {
                   method: 'GET',
                   headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${BEARER_TOKEN}`
+                    'Authorization': `Bearer ${token}`
                   }
                 });
           const data = await response.json();

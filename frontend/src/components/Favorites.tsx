@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { API_BASE_URL, BEARER_TOKEN } from '../lib/config';
+import { API_BASE_URL } from '../lib/config';
 import { FaStar, FaTrashCan } from 'react-icons/fa6';
 
 interface FavoritesProps {
@@ -17,9 +17,10 @@ const Favorites = ({ currentCity, onFavoriteClick }: FavoritesProps) => {
     const fetchFavorites = async () => {
       try {
         setLoading(true);
+        const token = localStorage.getItem("token");
         const response = await fetch(`${API_BASE_URL}/favorites`, {
           headers: {
-            'Authorization': `Bearer ${BEARER_TOKEN}`
+            'Authorization': `Bearer ${token}`
           }
         });
         const data = await response.json();
@@ -37,12 +38,13 @@ const Favorites = ({ currentCity, onFavoriteClick }: FavoritesProps) => {
 
   const addFavorite = async (city: string) => {
     try {
+      const token = localStorage.getItem("token");
       setLoading(true);
       const response = await fetch(`${API_BASE_URL}/favorites`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${BEARER_TOKEN}`
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({ city })
       });
@@ -62,11 +64,13 @@ const Favorites = ({ currentCity, onFavoriteClick }: FavoritesProps) => {
 
   const removeFavorite = async (city: string) => {
     try {
+      const token = localStorage.getItem("token");
+
       setLoading(true);
       await fetch(`${API_BASE_URL}/favorites/${encodeURIComponent(city)}`, {
         method: 'DELETE',
         headers: {
-          'Authorization': `Bearer ${BEARER_TOKEN}`
+          'Authorization': `Bearer ${token}`
         }
       });
       setFavorites(prev => prev.filter(fav => fav !== city));

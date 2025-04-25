@@ -1,6 +1,6 @@
 import { useParams } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import { API_BASE_URL, BEARER_TOKEN } from '../../lib/config';
+import { API_BASE_URL } from '../../lib/config';
 
 interface WeatherData {
   data: {
@@ -46,9 +46,10 @@ const CityPage = () => {
   useEffect(() => {
     const fetchWeather = async () => {
       try {
+        const token = localStorage.getItem("token");
         const response = await fetch(`${API_BASE_URL}/weather?city=${name}`, {
           headers: {
-            'Authorization': `Bearer ${BEARER_TOKEN}`
+            'Authorization': `Bearer ${token}`
           }
         });
         const data = await response.json();
