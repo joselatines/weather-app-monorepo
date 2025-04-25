@@ -19,10 +19,10 @@ export const getWeather = async (req: AuthenticatedRequest, res: Response<Messag
     const weatherData = await weatherAPI.getWeather(city as string);
 
     if (!weatherData ) {
-      return res.status(404).json({ message: 'Weather data not found', data: weatherData });  
+      return res.status(404).json({ message: 'Weather data not found'});  
     }
 
-    if (weatherData.error) return res.status(400).json({ message: weatherData.error.message, data: weatherData });
+    if (weatherData.error) return res.status(400).json({ message: weatherData.error.message, error: weatherData.error });
 
     res.json({ data:weatherData, message: 'Weather data fetched successfully' });
   } catch (error) {
