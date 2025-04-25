@@ -31,7 +31,7 @@ Running the application using Docker Compose is the recommended method as it han
 1.  **Clone the repository:**
     ```bash
     git clone <repository-url>
-    cd pulpo-line-fullstack
+    cd weather-app-monorepo
     ```
 2.  **Configure Environment Variables:**
     *   **Backend:** Create a `.env` file inside the `backend/` directory. You can copy `backend/.env.example` as a template. Ensure `DATABASE_URL` and `JWT_SECRET` are set correctly. For Docker Compose, the `DATABASE_URL` typically points to the database service name (e.g., `postgresql://user:password@db:5432/mydatabase?schema=public`).
